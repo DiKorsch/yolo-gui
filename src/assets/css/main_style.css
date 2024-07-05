@@ -1,0 +1,35 @@
+QMainWindow * {
+	font-family: "Roboto Condensed";
+	font-size: 12pt;
+}
+
+QMainWindow {
+	background-image: url("assets/logos/logo_cvg_blue_background.png");
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: bottom right;
+}
+
+
+/* only QLabel class */
+
+.QLabel, .ClickableLabel {
+	max-height: 20px;
+
+	qproperty-alignment: AlignCenter;
+}
+
+.ExtraWindow .QLabel {
+	font-size: 18pt;
+	max-height: 40px;
+}
+
+QVBoxLayout {
+	text-align: center;
+}
+
+/* QLabel class and all classes derived from it */
+QLabel {
+	text-align: center;
+}
+

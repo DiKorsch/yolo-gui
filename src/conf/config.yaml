@@ -1,0 +1,20 @@
+root: none
+gpu: 0
+cam:
+  id: 0
+  width: 1280
+  height: 720
+
+run_async: False
+flip_image: True
+
+assets_path:
+  css: "assets/css"
+  icons: "assets/icon"
+
+css_styles:
+  main: "main_style.css"
+
+icon: "favicon_white.png"
+
+logos: []

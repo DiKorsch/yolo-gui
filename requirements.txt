@@ -1,0 +1,10 @@
+tqdm
+requests
+
+opencv-python-headless
+scipy
+structlog
+pyqtgraph
+
+PyQt5
+hydra-core
