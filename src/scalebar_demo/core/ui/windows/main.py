@@ -1,6 +1,7 @@
 import numpy as np
 import structlog
 import cv2
+import typing as T
 
 from omegaconf import DictConfig
 from PyQt5 import QtWidgets
@@ -13,14 +14,14 @@ from .. import widgets
 logger = structlog.get_logger()
 
 class MainWindow(BaseWindow):
-    def __init__(self, cfg: DictConfig, cam: CV2CamHandler):
+    def __init__(self, cfg: DictConfig, cam: CV2CamHandler, proc_func: T.Callable):
         super().__init__(cfg)
         logger.info("Create MainWindow")
 
         logger.info("Camera Module", cls=type(cam))
 
         self.camera = camera    = widgets.CameraWidget(cfg, cam, parent=self)
-        self.proc = proc        = widgets.FrameProcessor(cfg, parent=self)
+        self.proc = proc        = widgets.FrameProcessor(cfg, proc_func=proc_func, parent=self)
         # self.extra_window       = windows.HighlightWindow(parent=self)
 
         center = QtWidgets.QWidget(parent=self)
@@ -37,6 +38,7 @@ class MainWindow(BaseWindow):
 
         self._proc_fps = deque(maxlen=30)
         self._cam_fps = deque(maxlen=30)
+        self._scales = deque(maxlen=30)
 
         camera.frame_ready.connect(proc)
         camera.fps_update.connect(self.update_cam_fps)
@@ -114,6 +116,12 @@ class MainWindow(BaseWindow):
         # self.extra_window.title.setText("Predicted Class: {}".format(predictions[0, 0]))
 
     def result_ready(self, img):
+        if isinstance(img, tuple):
+            img, scale = img
+            if scale is not None:
+                self._scales.append(scale)
+                self.update_status_bar()
+
         img = self.postprocess(img)
         self.camera.result.set_image(img)
         # self.extra_window.result.set_image(img)
@@ -130,13 +138,13 @@ class MainWindow(BaseWindow):
 
     def update_proc_fps(self, fps):
         self._proc_fps.append(fps)
-        self.update_fps()
+        self.update_status_bar()
 
     def update_cam_fps(self, fps):
         self._cam_fps.append(fps)
-        self.update_fps()
+        self.update_status_bar()
 
-    def update_fps(self):
+    def update_status_bar(self):
         msgs = []
 
         if self._cam_fps:
@@ -147,6 +155,9 @@ class MainWindow(BaseWindow):
             mean_fps = sum(self._proc_fps) / len(self._proc_fps)
             msgs.append("Processing: {:>7.1f} FPS".format(mean_fps))
 
+        if self._scales:
+            mean_scale = sum(self._scales) / len(self._scales)
+            msgs.append("Estimated scale: {:>7.1f} px / cm".format(10 * mean_scale))
         # msgs.append(self.hotkey_text)
 
         self.statusBar().showMessage(" | ".join(msgs))

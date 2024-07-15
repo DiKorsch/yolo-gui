@@ -18,7 +18,7 @@ class CV2CamHandler(object):
         logger.info("Camera capture size [requested]", width=cfg.cam.width, height=cfg.cam.height)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, cfg.cam.width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cfg.cam.height)
-        self.cap.set(cv2.CAP_PROP_FPS, 30.0)
+        self.cap.set(cv2.CAP_PROP_FPS, cfg.cam.fps)
 
     def read(self) -> tuple[bool, np.ndarray]:
         return self.cap.read()

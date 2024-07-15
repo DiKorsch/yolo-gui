@@ -12,11 +12,14 @@ class CaptureThread(QtCore.QThread, utils.TicTocMixin):
 
     frame_ready = QtCore.pyqtSignal(object)
 
-    def __init__(self, cam, flip_image, *args, **kwargs):
+    def __init__(self, cam, flip_image, temp_smoothing: bool = True, *args, **kwargs):
         super(CaptureThread, self).__init__(*args, **kwargs)
         self.cam = cam
         self.flip_image = flip_image
+        self.temp_smoothing = temp_smoothing
+        self.smoothing_factor = 0.1
 
+        self.avg_frame = None
         self._running = True
 
         parent = self.parent()
@@ -34,6 +37,13 @@ class CaptureThread(QtCore.QThread, utils.TicTocMixin):
 
             if self.flip_image:
                 frame = frame[:, ::-1, :]#.copy()
+
+            if self.temp_smoothing:
+                if self.avg_frame is None:
+                    self.avg_frame = frame
+                else:
+                    a, b = self.smoothing_factor, 1-self.smoothing_factor
+                    frame = self.avg_frame = (a * self.avg_frame + b * frame).astype(frame.dtype)
 
             self.frame_ready.emit(frame)
 

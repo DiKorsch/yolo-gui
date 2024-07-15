@@ -5,12 +5,22 @@ eval "$(conda shell.bash hook)"
 PYTHON="python"
 # PYTHON="scalene --cpu --gpu --memory ---" # require !pip install scalene
 
-v4l2-ctl -d /dev/video0 --set-ctrl=power_line_frequency=1
+for dev in /dev/video*; do
+    if [[ -e $dev ]]; then
+        echo "Found camera at $dev"
+        # v4l2-ctl -d $dev --set-ctrl=power_line_frequency=1
+    fi
+done
+
+CAM=${CAM:-0}
+
+v4l2-ctl -d /dev/video${CAM} --set-ctrl power_line_frequency=0,sharpness=255
+# v4l2-ctl -d /dev/video2 --set-ctrl power_line_frequency=0
 
 conda activate ${CONDA_ENV:-Demos}
-PARAMS=""
-if [[ ! -z $@ ]]; then
-    PARAMS="--config-name $@"
-fi
+# PARAMS=""
+# if [[ ! -z $@ ]]; then
+#     PARAMS="--config-name $@"
+# fi
 
-$PYTHON src/main.py $PARAMS
+$PYTHON src/main.py cam.id=$CAM $@ #$PARAMS

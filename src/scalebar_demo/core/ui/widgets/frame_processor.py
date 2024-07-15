@@ -2,6 +2,8 @@ __all__ = ["FrameProcessor"]
 import multiprocessing.dummy as mp
 
 import numpy as np
+import typing as T
+
 from PyQt5 import QtCore, QtWidgets
 
 from scalebar_demo import utils
@@ -23,7 +25,7 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
     #     for model in self.models.values():
     #         model.handle_key(event.key())
 
-    def __init__(self, cfg, *args, **kwargs):
+    def __init__(self, cfg, proc_func: T.Callable, *args, **kwargs):
         super(FrameProcessor, self).__init__(*args, **kwargs)
         # self.models = models
         # # just the take the first model as the initial model
@@ -32,6 +34,8 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
         self.pool = mp.Pool(1) if cfg.run_async else None
 
         self.result = None
+        assert callable(proc_func), "proc_func must be callable"
+        self.process = proc_func
 
     def __call__(self, frame: np.ndarray):
         # this called by CaptureThread.frame_ready.emit(frame)
@@ -47,7 +51,3 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
 
             self.result = None
             self.toc()
-
-    def process(self, frame: np.ndarray):
-        return frame
-        # raise NotImplementedError("Implement this method in subclass")

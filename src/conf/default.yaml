@@ -1,0 +1,25 @@
+root: none
+gpu: 0
+cam:
+  id: 0
+  width: 1920
+  height: 1080
+  fps: 30
+
+scale:
+  size: MEDIUM # SMALL: 10%, MEDIUM: 30%, LARGE: 50% of the image
+  square_size: 2.0 # mm per square
+
+run_async: True
+flip_image: False
+
+assets_path:
+  css: "assets/css"
+  icons: "assets/icon"
+
+css_styles:
+  main: "main_style.css"
+
+icon: "favicon_white.png"
+
+logos: []
