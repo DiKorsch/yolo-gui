@@ -1,5 +1,6 @@
 root: none
 gpu: 0
+detector: "yolov8x-seg.pt"
 cam:
   id: 0
   width: 1920
