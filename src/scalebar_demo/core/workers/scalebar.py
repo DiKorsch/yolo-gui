@@ -1,20 +1,33 @@
 import cv2
 import numpy as np
 
+from dataclasses import dataclass
 from scalebar.core.image_wrapper import Images
 from scalebar.core.estimation import Distances
+from scalebar.core.bounding_box import BoundingBox
 from scalebar.core.size import Size
 from scalebar import utils as scalebar_utils
 
-class ScalebarProcessor:
 
-    def __init__(self, size_per_square: float = 1.0, size: Size = Size.MEDIUM):
-        self.mm_per_square = size_per_square
-        self.scale_bar_size = size
+@dataclass
+class Result:
+    images: Images
+    position: BoundingBox
 
-    def __call__(self, frame: np.ndarray) -> np.ndarray:
+    corners: np.ndarray = None
+    px_per_square: float = None
+    mm_per_square: float = None
 
-        images = Images(frame, size=self.scale_bar_size)
+    @property
+    def scale(self) -> float:
+        if self.px_per_square is None:
+            return None
+        return self.px_per_square / self.mm_per_square
+
+
+    @classmethod
+    def process(cls, frame: np.ndarray, scale_bar_size: Size, mm_per_square: float) -> 'Result':
+        images = Images(frame, size=scale_bar_size)
 
         template_size = images.structure_sizes.template_size
         min_distance = images.structure_sizes.size
@@ -24,6 +37,7 @@ class ScalebarProcessor:
 
         scalebar = position.crop(images.equalized)
         mask = position.crop(match)
+
         bin_crop = scalebar_utils.threshold(scalebar, mode=cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         corners = cv2.goodFeaturesToTrack(bin_crop,
                                         maxCorners=50,
@@ -31,32 +45,48 @@ class ScalebarProcessor:
                                         minDistance=5*min_distance,
                                         mask=mask)
 
-
-        # masked = scalebar_utils.hide_non_roi(images.binary, self.scale_bar_size.value / 2, 127, location=None)
-        # res = cv2.cvtColor(masked, cv2.COLOR_GRAY2BGR)
-        res = frame.copy()
-        cropped = False
-
         if corners is None:
-            return res, None
+            return cls(images=images, position=position)
 
         corners = corners[:, 0, ::-1].astype(int)
-        ys, xs = corners.transpose(1, 0)
-
-        for x, y in zip(xs, ys):
-            if cropped:
-                res = cv2.circle(res, (x, y), 2, (0, 0, 255), -1)
-            else:
-                res = cv2.circle(res, (x + position.x, y + position.y), 2, (0, 0, 255), -1)
-
         distances = Distances(corners)
         px_per_square = distances.optimal_distance()
 
-        px_per_mm = None
-        if px_per_square is not None:
-            px_per_mm = px_per_square / self.mm_per_square
-            res = self.add_measure(res, px_per_mm, mm=10)
-        return res, px_per_mm
+        if px_per_square is None:
+            return cls(images=images, corners=corners, position=position,
+                       mm_per_square=mm_per_square)
+
+
+        return cls(images=images, corners=corners, position=position,
+                   px_per_square=px_per_square, mm_per_square=mm_per_square)
+
+
+class ScalebarProcessor:
+
+    def __init__(self, size_per_square: float = 1.0, size: Size = Size.MEDIUM):
+        self.mm_per_square = size_per_square
+        self.scale_bar_size = size
+
+    def estimate(self, frame: np.ndarray) -> Result:
+        return Result.process(frame, self.scale_bar_size, self.mm_per_square)
+
+    def __call__(self, frame: np.ndarray) -> np.ndarray:
+
+        scbar = self.estimate(frame)
+        res = frame.copy()
+
+        if scbar.corners is None:
+            return res, None
+
+        ys, xs = scbar.corners.transpose(1, 0)
+        for x, y in zip(xs, ys):
+            res = cv2.circle(res, (x + scbar.position.x, y + scbar.position.y), 2, (0, 0, 255), -1)
+
+        scale = scbar.scale
+        if scale is not None:
+            res = self.add_measure(res, scale, mm=10)
+
+        return res, scale
 
     def add_measure(self, img, px_per_mm: float, mm: float) -> np.ndarray:
         height, width, *_ = img.shape

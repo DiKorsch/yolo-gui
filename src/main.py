@@ -6,8 +6,9 @@ from omegaconf import DictConfig
 from pathlib import Path
 from PyQt5 import QtCore
 
-from scalebar_demo import core
 from scalebar.core.size import Size
+
+from scalebar_demo import core
 from scalebar_demo.core import workers
 
 @hydra.main(config_path="conf", config_name="default", version_base=None)
@@ -16,8 +17,15 @@ def main(cfg: DictConfig):
 
     pg.setConfigOption(opt="imageAxisOrder", value="row-major")
     cam = core.CV2CamHandler(cfg)
+
+    proc = workers.SizeEstimator(
+        size_per_square=cfg.scale.square_size,
+        size=Size.get(cfg.scale.size),
+        detector=cfg.detector,
+    )
+
     # proc = workers.ScalebarProcessor(size_per_square=cfg.scale.square_size, size=Size.get(cfg.scale.size))
-    proc = workers.DetectionWorker(cfg.detector)
+    # proc = workers.DetectionWorker(cfg.detector)
     app = core.ui.MainApp(cfg, cam, proc, [])
 
     if hasattr(QtCore.Qt, "AA_UseHighDpiPixmaps"):

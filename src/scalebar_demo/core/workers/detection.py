@@ -57,9 +57,11 @@ class DetectionWorker:
             # image = cv2.addWeighted(image, 0.5, mask, 0.5, 0)
         return image
 
+    def predict(self, image: np.ndarray) -> T.List[results.Results]:
+        return self.yolo.predict(source=image, verbose=False)
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
-        preds: T.List[results.Results] = self.yolo.predict(source=image, verbose=False)
+        preds: T.List[results.Results] = self.predict(image)
         if self.is_seg:
             return self.show_seg(image, preds)
         else:
