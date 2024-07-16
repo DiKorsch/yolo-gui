@@ -8,3 +8,8 @@ pyqtgraph
 
 PyQt5
 hydra-core
+torch
+torchvision
+torchaudio
+ultralytics
+numpy>=1.26,<2.0
