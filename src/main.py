@@ -1,6 +1,9 @@
 import hydra
 import sys
+import structlog
 import pyqtgraph as pg
+import matplotlib as mpl
+mpl.use('Agg')
 
 from omegaconf import DictConfig
 from pathlib import Path
@@ -11,12 +14,16 @@ from scalebar.core.size import Size
 from scalebar_demo import core
 from scalebar_demo.core import workers
 
+logger = structlog.get_logger()
+
 @hydra.main(config_path="conf", config_name="default", version_base=None)
 def main(cfg: DictConfig):
     cfg.root = Path(sys.argv[0]).parent
 
     pg.setConfigOption(opt="imageAxisOrder", value="row-major")
     cam = core.CV2CamHandler(cfg)
+
+    # proc = workers.PoseEstimator()
 
     proc = workers.SizeEstimator(
         size_per_square=cfg.scale.square_size,
@@ -29,6 +36,7 @@ def main(cfg: DictConfig):
     app = core.ui.MainApp(cfg, cam, proc, [])
 
     if hasattr(QtCore.Qt, "AA_UseHighDpiPixmaps"):
+        logger.info("Setting high DPI pixmaps")
         app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
 
     sys.exit(app.exec_())
