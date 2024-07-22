@@ -5,7 +5,6 @@ import typing as T
 
 from omegaconf import DictConfig
 from PyQt5 import QtWidgets
-from PyQt5 import QtGui
 from PyQt5 import QtCore
 from collections import deque
 

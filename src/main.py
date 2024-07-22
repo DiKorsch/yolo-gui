@@ -9,8 +9,6 @@ from omegaconf import DictConfig
 from pathlib import Path
 from PyQt5 import QtCore
 
-from scalebar.core.size import Size
-
 from scalebar_demo import core
 from scalebar_demo.core import workers
 
