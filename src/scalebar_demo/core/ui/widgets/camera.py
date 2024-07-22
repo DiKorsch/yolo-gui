@@ -57,8 +57,8 @@ class CameraWidget(QtWidgets.QWidget, utils.TicTocMixin):
         super(CameraWidget, self).__init__(*args, **kwargs)
 
         self.frame  = widgets.ImageWidget(parent=self)
-        self.result = widgets.ImageWidget(parent=self)
-        self.result.link(self.frame.vb)
+        self.result = widgets.ImageWidget(parent=self, link_to=self.frame.vb)
+        self.setStyleSheet("background-color: transparent;")
 
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.frame)

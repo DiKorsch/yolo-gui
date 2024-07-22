@@ -16,20 +16,24 @@ class ImageWidget(pg.GraphicsLayoutWidget):
         super().mouseDoubleClickEvent(event)
         self.clicked.emit()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, link_to: pg.ViewBox = None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.setBackground(None)
 
         self.ci.setContentsMargins(0, 0, 0, 0)
         self.ci.setSpacing(0)
 
         self.vb: pg.ViewBox = self.addViewBox()
         self.vb.setAspectLocked(True)
-        p = QtGui.QPalette()
-        self.vb.setBackgroundColor(p.window().color())
+        self.vb.setBackgroundColor(None)
+
         self.ii = pg.ImageItem()
-        self.ii.setAutoDownsample(False)
+        self.ii.setAutoDownsample(True)
         self.vb.addItem(self.ii)
         self.img = None
+
+        if link_to is not None:
+            self.link(link_to)
 
     def set_image(self, image: np.ndarray):
         self.img = image
