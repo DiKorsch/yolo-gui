@@ -23,7 +23,7 @@ def main(cfg: DictConfig):
     pg.setConfigOption(opt="imageAxisOrder", value="row-major")
     cam = core.CV2CamHandler(cfg)
 
-    # proc = workers.PoseEstimator()
+    # proc = workers.PoseEstimator(threed=True)
 
     proc = workers.SizeEstimator(
         size_per_square=cfg.scale.square_size,

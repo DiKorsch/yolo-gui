@@ -21,6 +21,8 @@ assets_path:
 css_styles:
   main: "main_style.css"
 
-icon: "favicon_white.png"
+icon: "icon_dark_text.png"
 
-logos: []
+logos: [
+
+]

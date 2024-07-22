@@ -5,6 +5,7 @@ from mmpose.apis import MMPoseInferencer
 
 class PoseEstimator:
     def __init__(self, threed=False):
+        self.threed = threed
         if threed:
             self.model = MMPoseInferencer(pose3d="human3d")
         else:
@@ -12,6 +13,14 @@ class PoseEstimator:
 
     def __call__(self, frame: np.ndarray):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        generator = self.model(frame, return_vis=True)
-        result = next(generator)
-        return result["visualization"][0]
+        if self.threed:
+            generator = self.model(frame, return_vis=True)
+            result = next(generator)
+            vis = result["visualization"][0]
+            _, w, _ = frame.shape
+            _, vis3d = vis[:, :w], vis[:, w:]
+            return vis3d
+        else:
+            generator = self.model(frame, return_vis=True)
+            result = next(generator)
+            return result["visualization"][0]

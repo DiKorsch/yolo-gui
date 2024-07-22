@@ -5,6 +5,7 @@ import typing as T
 
 from omegaconf import DictConfig
 from PyQt5 import QtWidgets
+from PyQt5 import QtGui
 from collections import deque
 
 from .base import BaseWindow
@@ -18,7 +19,7 @@ class MainWindow(BaseWindow):
         super().__init__(cfg)
         logger.info("Create MainWindow")
 
-        logger.info("Camera Module", cls=type(cam))
+        logger.info("Camera Module", cls=type(cam).__name__)
 
         self.camera = camera    = widgets.CameraWidget(cfg, cam, parent=self)
         self.proc = proc        = widgets.FrameProcessor(cfg, proc_func=proc_func, parent=self)

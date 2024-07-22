@@ -20,7 +20,7 @@ class BaseWindow(QtWidgets.QMainWindow):
     def post_init(self, central_widget, title=""):
         self.setWindowTitle(title)
         self.setCentralWidget(central_widget)
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(1600, 900)
         self.setWindowIcon(self.icon)
 
     def keyPressEvent(self, event):
