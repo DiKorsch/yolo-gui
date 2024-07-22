@@ -4,10 +4,6 @@ QMainWindow * {
 }
 
 QMainWindow {
-	background-image: url("src/assets/logos/bright_long_transparent_sm.png");
-	background-repeat: no-repeat;
-	background-attachment: fixed;
-	background-position: bottom right;
 	background-color: qlineargradient(
 		spread:pad,
 		x1:0, y1:0, x2:1, y2:0,
@@ -20,8 +16,7 @@ QMainWindow {
 /* only QLabel class */
 
 .QLabel, .ClickableLabel {
-	max-height: 20px;
-
+	/* max-height: 20px; */
 	qproperty-alignment: AlignCenter;
 }
 
@@ -38,4 +33,3 @@ QVBoxLayout {
 QLabel {
 	text-align: center;
 }
-

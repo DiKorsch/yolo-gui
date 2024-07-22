@@ -6,6 +6,7 @@ import typing as T
 from omegaconf import DictConfig
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
+from PyQt5 import QtCore
 from collections import deque
 
 from .base import BaseWindow
@@ -15,22 +16,33 @@ from .. import widgets
 logger = structlog.get_logger()
 
 class MainWindow(BaseWindow):
+
     def __init__(self, cfg: DictConfig, cam: CV2CamHandler, proc_func: T.Callable):
         super().__init__(cfg)
         logger.info("Create MainWindow")
 
         logger.info("Camera Module", cls=type(cam).__name__)
 
-        self.camera = camera    = widgets.CameraWidget(cfg, cam, parent=self)
-        self.proc = proc        = widgets.FrameProcessor(cfg, proc_func=proc_func, parent=self)
-        # self.extra_window       = windows.HighlightWindow(parent=self)
-
         center = QtWidgets.QWidget(parent=self)
-        center.setLayout(QtWidgets.QVBoxLayout())
+        layout = QtWidgets.QVBoxLayout()
+        center.setLayout(layout)
 
-        # model_selection = widgets.ModelSelection(models=self.models, parent=self)
-        center.layout().addWidget(camera)
-        # center.layout().addWidget(model_selection)
+        # center.setStyleSheet("background-color: rgba(0,0,0, 127); border: 2px solid yellow;")
+
+        self.header = header    = widgets.Header(cfg, parent=center)
+        self.camera = camera    = widgets.CameraWidget(cfg, cam, parent=center)
+        self.proc = proc        = widgets.FrameProcessor(cfg, proc_func=proc_func, parent=center)
+        # self.extra_window       = windows.HighlightWindow(parent=self)
+        # model_selection = widgets.ModelSelection(models=self.models, parent=center)
+
+        # logger.info("Header size: ", size=header.sizeHint())
+        logger.info("Camera size: ", size=camera.sizeHint())
+        logger.info("Center size: ", size=center.sizeHint())
+
+
+        layout.addWidget(header, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(camera, 4)
+        # layout.addWidget(model_selection, 1)
 
         self.prediction_label = QtWidgets.QLabel("")
         self.statusBar().addPermanentWidget(self.prediction_label)

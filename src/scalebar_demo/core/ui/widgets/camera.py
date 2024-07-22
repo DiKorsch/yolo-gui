@@ -53,7 +53,7 @@ class CaptureThread(QtCore.QThread, utils.TicTocMixin):
 class CameraWidget(QtWidgets.QWidget, utils.TicTocMixin):
     frame_ready = QtCore.pyqtSignal(object)
 
-    def __init__(self, opts, cam, *args, **kwargs):
+    def __init__(self, cfg, cam, *args, **kwargs):
         super(CameraWidget, self).__init__(*args, **kwargs)
 
         self.frame  = widgets.ImageWidget(parent=self)
@@ -68,7 +68,10 @@ class CameraWidget(QtWidgets.QWidget, utils.TicTocMixin):
 
         self.setLayout(layout)
 
-        self._thread = CaptureThread(cam, opts.flip_image, parent=self)
+        self._thread = CaptureThread(cam,
+                                     cfg.flip_image,
+                                     temp_smoothing=cfg.temp_smoothing,
+                                     parent=self)
         self._thread.start()
         self.frame_ready.connect(self.frame.set_image)
 

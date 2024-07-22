@@ -13,6 +13,7 @@ scale:
 
 run_async: True
 flip_image: False
+temp_smoothing: False
 
 assets_path:
   css: "assets/css"
@@ -22,6 +23,7 @@ css_styles:
   main: "main_style.css"
 
 icon: "icon_dark_text.png"
+info_text: "src/assets/info_text.html"
 
 logos: [
 

@@ -23,13 +23,13 @@ def main(cfg: DictConfig):
     pg.setConfigOption(opt="imageAxisOrder", value="row-major")
     cam = core.CV2CamHandler(cfg)
 
-    # proc = workers.PoseEstimator(threed=True)
+    proc = workers.PoseEstimator(threed=False)
 
-    proc = workers.SizeEstimator(
-        size_per_square=cfg.scale.square_size,
-        size=Size.get(cfg.scale.size),
-        detector=cfg.detector,
-    )
+    # proc = workers.SizeEstimator(
+    #     size_per_square=cfg.scale.square_size,
+    #     size=Size.get(cfg.scale.size),
+    #     detector=cfg.detector,
+    # )
 
     # proc = workers.ScalebarProcessor(size_per_square=cfg.scale.square_size, size=Size.get(cfg.scale.size))
     # proc = workers.DetectionWorker(cfg.detector)
