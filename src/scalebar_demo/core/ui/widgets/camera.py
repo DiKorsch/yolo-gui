@@ -69,8 +69,8 @@ class CameraWidget(QtWidgets.QWidget, utils.TicTocMixin):
         self.setLayout(layout)
 
         self._thread = CaptureThread(cam,
-                                     cfg.flip_image,
-                                     temp_smoothing=cfg.temp_smoothing,
+                                     cfg.cam.flip_image,
+                                     temp_smoothing=cfg.cam.temp_smoothing,
                                      parent=self)
         self._thread.start()
         self.frame_ready.connect(self.frame.set_image)

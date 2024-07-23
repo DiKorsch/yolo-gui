@@ -1,0 +1,7 @@
+name: ScaleEstimator
+weights: "yolov8x-seg.pt"
+info_text: "src/assets/scale_estimator.html"
+
+scale:
+  size: MEDIUM # SMALL: 10%, MEDIUM: 30%, LARGE: 50% of the image
+  square_size: 2.0 # mm per square

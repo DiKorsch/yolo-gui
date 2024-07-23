@@ -1,0 +1,4 @@
+name: PoseEstimator
+weights: none
+threed: true
+info_text: "src/assets/pose_estimator.html"

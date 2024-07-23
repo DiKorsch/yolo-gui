@@ -1,19 +1,18 @@
 root: none
 gpu: 0
-detector: "yolov8x-seg.pt"
+run_async: True
+
+defaults:
+  - model: scalebar
+
 cam:
   id: 0
   width: 1920
   height: 1080
   fps: 30
+  flip_image: False
+  temp_smoothing: False
 
-scale:
-  size: MEDIUM # SMALL: 10%, MEDIUM: 30%, LARGE: 50% of the image
-  square_size: 2.0 # mm per square
-
-run_async: True
-flip_image: False
-temp_smoothing: False
 
 assets_path:
   css: "assets/css"
@@ -23,7 +22,6 @@ css_styles:
   main: "main_style.css"
 
 icon: "icon_dark_text.png"
-info_text: "src/assets/info_text.html"
 
 logos: [
 

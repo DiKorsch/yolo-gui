@@ -10,9 +10,27 @@ from pathlib import Path
 from PyQt5 import QtCore
 
 from scalebar_demo import core
+from scalebar.core.size import Size
 from scalebar_demo.core import workers
 
 logger = structlog.get_logger()
+
+def new_frame_processor(cfg: DictConfig):
+    if cfg.model.name == "PoseEstimator":
+        return workers.PoseEstimator(threed=cfg.model.threed)
+    elif cfg.model.name == "ScaleEstimator":
+        scale_info = cfg.model.scale
+        # proc = workers.ScalebarProcessor(size_per_square=scale_info.square_size,
+        #                                  size=Size.get(scale_info.size))
+        # proc = workers.DetectionWorker(cfg.model.weights)
+        return workers.SizeEstimator(
+            size_per_square=scale_info.square_size,
+            size=Size.get(scale_info.size),
+            detector=cfg.model.weights,
+        )
+    else:
+        raise ValueError(f"Unknown model: {cfg.model.name}")
+
 
 @hydra.main(config_path="conf", config_name="default", version_base=None)
 def main(cfg: DictConfig):
@@ -21,16 +39,7 @@ def main(cfg: DictConfig):
     pg.setConfigOption(opt="imageAxisOrder", value="row-major")
     cam = core.CV2CamHandler(cfg)
 
-    proc = workers.PoseEstimator(threed=False)
-
-    # proc = workers.SizeEstimator(
-    #     size_per_square=cfg.scale.square_size,
-    #     size=Size.get(cfg.scale.size),
-    #     detector=cfg.detector,
-    # )
-
-    # proc = workers.ScalebarProcessor(size_per_square=cfg.scale.square_size, size=Size.get(cfg.scale.size))
-    # proc = workers.DetectionWorker(cfg.detector)
+    proc = new_frame_processor(cfg)
     app = core.ui.MainApp(cfg, cam, proc, [])
 
     if hasattr(QtCore.Qt, "AA_UseHighDpiPixmaps"):
