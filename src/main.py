@@ -44,7 +44,7 @@ def main(cfg: DictConfig):
 
     if hasattr(QtCore.Qt, "AA_UseHighDpiPixmaps"):
         logger.info("Setting high DPI pixmaps")
-        app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+        app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, on=True)
 
     sys.exit(app.exec_())
 
