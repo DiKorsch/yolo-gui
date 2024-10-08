@@ -1,0 +1,3 @@
+name: GroceryDetector
+weights: yolov8n-groceries.pt
+info_text: none #"src/assets/pose_estimator.html"
