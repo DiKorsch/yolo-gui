@@ -13,3 +13,5 @@ torchvision
 torchaudio
 ultralytics
 numpy>=1.26,<2.0
+
+scalebar
