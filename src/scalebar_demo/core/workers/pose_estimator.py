@@ -2,11 +2,17 @@ import numpy as np
 import cv2
 import typing as T
 
-from mmpose.apis import MMPoseInferencer
 from ultralytics.engine import results
 from ultralytics import YOLO
 
 from itertools import product
+
+has_mmpose = False
+try:
+    import mmpose  # noqa: F401
+    has_mmpose = True
+except ImportError:
+    pass
 
 class PoseEstimator:
     available_snapshots = [
@@ -20,6 +26,8 @@ class PoseEstimator:
 
         self.threed = threed
         if threed:
+            assert has_mmpose, "mmpose not installed!"
+            from mmpose.apis import MMPoseInferencer
             self.model = MMPoseInferencer(pose3d="human3d")
         else:
             self.model = YOLO(weights)
