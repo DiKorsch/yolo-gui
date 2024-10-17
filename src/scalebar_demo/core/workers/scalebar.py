@@ -27,7 +27,7 @@ class Result:
 
     @classmethod
     def process(cls, frame: np.ndarray, scale_bar_size: Size, mm_per_square: float) -> 'Result':
-        images = Images(frame, size=scale_bar_size)
+        images = Images(frame)
 
         template_size = images.structure_sizes.template_size
         min_distance = images.structure_sizes.size

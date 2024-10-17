@@ -1,5 +1,5 @@
 name: ScaleEstimator
-weights: "yolov8x-seg.pt"
+weights: "yolo11s-seg.pt"
 info_text: "src/assets/scale_estimator.html"
 
 scale:

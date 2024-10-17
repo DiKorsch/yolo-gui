@@ -4,18 +4,16 @@ import typing as T
 
 from ultralytics import YOLO
 from ultralytics.engine import results
+from itertools import product
 
 from scalebar_demo.utils import putText
 
 class DetectionWorker:
     available_snapshots = [
-        "yolov8n.pt",
-        "yolov8m.pt",
-        "yolov8x.pt",
-        "yolov8n-seg.pt",
-        "yolov8m-seg.pt",
-        "yolov8x-seg.pt",
+        f"yolo{ver}{size}{task}.pt"
+        for ver, size, task in product(["v8", "11"], ["n", "s", "m", "l", "x"], ["", "-seg"])
     ]
+
     def __init__(self, snapshot: str):
         assert snapshot in DetectionWorker.available_snapshots, \
             f"Snapshot {snapshot} not available: {DetectionWorker.available_snapshots}"
@@ -56,7 +54,8 @@ class DetectionWorker:
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
         preds: T.List[results.Results] = self.predict(image)
+        res = image.copy()
         if self.is_seg:
-            return self.show_seg(image, preds)
+            return self.show_seg(res, preds)
         else:
-            return self.show_boxes(image, preds)
+            return self.show_boxes(res, preds)

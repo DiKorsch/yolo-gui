@@ -22,13 +22,14 @@ class SizeEstimator:
         scbar = self.scale_estimator.estimate(img)
         is_seg = self.detector.is_seg
         scale = scbar.scale
+        res = img.copy()
+
         if scale is None:
             if is_seg:
-                return self.detector.show_seg(img, preds)
+                return self.detector.show_seg(res, preds)
             else:
-                return self.detector.show_boxes(img, preds)
+                return self.detector.show_boxes(res, preds)
 
-        res = img.copy()
 
         res = show_predictions(res, preds, scale, is_seg=is_seg)
         res = plot_corners(res, scbar, scale)

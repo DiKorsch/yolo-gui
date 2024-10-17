@@ -8,7 +8,7 @@ from ultralytics.engine import results
 from scalebar_demo.core.workers.base import BaseWorker
 from scalebar_demo.utils import putText
 
-class GroceryDetector(BaseWorker):
+class Detector(BaseWorker):
 
     def __init__(self, weights: str):
         self.load_model(weights)

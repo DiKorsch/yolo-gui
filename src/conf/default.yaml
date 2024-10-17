@@ -3,14 +3,14 @@ gpu: 0
 run_async: True
 
 defaults:
-  - model: scalebar
+  - model: detector
 
 cam:
   id: 0
-  width: 1920
-  height: 1080
+  width: 1280
+  height: 720
   fps: 30
-  flip_image: False
+  flip_image: True
   temp_smoothing: False
 
 

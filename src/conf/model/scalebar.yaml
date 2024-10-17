@@ -1,5 +1,5 @@
 name: ScaleEstimator
-weights: "yolov8x.pt"
+weights: "yolo11s.pt"
 info_text: "src/assets/scale_estimator.html"
 
 scale:

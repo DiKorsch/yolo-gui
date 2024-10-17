@@ -28,8 +28,8 @@ def new_frame_processor(cfg: DictConfig):
             size=Size.get(scale_info.size),
             detector=cfg.model.weights,
         )
-    elif cfg.model.name == "GroceryDetector":
-        return workers.GroceryDetector(cfg.model.weights)
+    elif cfg.model.name == "Detector":
+        return workers.DetectionWorker(cfg.model.weights)
     else:
         raise ValueError(f"Unknown model: {cfg.model.name}")
 
