@@ -35,8 +35,8 @@ class MainWindow(BaseWindow):
         # model_selection = widgets.ModelSelection(models=self.models, parent=center)
 
         # logger.info("Header size: ", size=header.sizeHint())
-        logger.info("Camera size: ", size=camera.sizeHint())
-        logger.info("Center size: ", size=center.sizeHint())
+        # logger.info("Camera size: ", size=camera.sizeHint())
+        # logger.info("Center size: ", size=center.sizeHint())
 
 
         layout.addWidget(header, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
@@ -156,16 +156,22 @@ class MainWindow(BaseWindow):
         self._cam_fps.append(fps)
         self.update_status_bar()
 
+    def _format_fps(self, fps):
+        if fps >= 1:
+            return f"{fps:>7.1f} FPS"
+        else:
+            return f"{1 / fps:>7.1f} seconds per frame"
+
     def update_status_bar(self):
         msgs = []
 
         if self._cam_fps:
             mean_fps = sum(self._cam_fps) / len(self._cam_fps)
-            msgs.append("Camera: {:>7.1f} FPS".format(mean_fps))
+            msgs.append(f"Camera: {self._format_fps(mean_fps)}")
 
         if self._proc_fps:
             mean_fps = sum(self._proc_fps) / len(self._proc_fps)
-            msgs.append("Processing: {:>7.1f} FPS".format(mean_fps))
+            msgs.append(f"Processing: {self._format_fps(mean_fps)}")
 
         if self._scales:
             mean_scale = sum(self._scales) / len(self._scales)
