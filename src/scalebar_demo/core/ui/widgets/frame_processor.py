@@ -3,6 +3,7 @@ import multiprocessing.dummy as mp
 
 import numpy as np
 import typing as T
+import time
 
 from PyQt5 import QtCore, QtWidgets
 
@@ -34,8 +35,15 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
         self.pool = mp.Pool(1) if cfg.run_async else None
 
         self.result = None
+        self.wait = cfg.wait_after_process
         assert callable(proc_func), "proc_func must be callable"
-        self.process = proc_func
+        self._process = proc_func
+
+    def process(self, *args, **kw):
+        res = self._process(*args, **kw)
+        if self.wait is not None and self.wait > 0:
+            time.sleep(self.wait)
+        return res
 
     def __call__(self, frame: np.ndarray):
         # this called by CaptureThread.frame_ready.emit(frame)

@@ -1,6 +1,7 @@
 root: none
 gpu: 0
 run_async: True
+wait_after_process: 0.5 # in seconds
 
 defaults:
   - model: detector

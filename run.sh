@@ -13,7 +13,7 @@ done
 
 CAM=${CAM:-0}
 
-v4l2-ctl -d /dev/video${CAM} --set-ctrl power_line_frequency=0,sharpness=255
+v4l2-ctl -d /dev/video${CAM} --set-ctrl power_line_frequency=0 #,sharpness=255
 # v4l2-ctl -d /dev/video2 --set-ctrl power_line_frequency=0
 
 conda activate ${CONDA_ENV:-Demo}
