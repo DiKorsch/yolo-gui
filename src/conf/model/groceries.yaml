@@ -1,3 +1,5 @@
-name: Detector
-weights: yolov8n-groceries.pt
+name: GroceryDetector
+weights: yolo11n-groceries.pt
+extra_snapshots:
+  - yolo11n-groceries.pt
 info_text: none #"src/assets/pose_estimator.html"

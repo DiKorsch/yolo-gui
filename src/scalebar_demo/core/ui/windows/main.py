@@ -1,22 +1,22 @@
 import numpy as np
 import structlog
 import cv2
-import typing as T
 
 from omegaconf import DictConfig
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from collections import deque
 
-from .base import BaseWindow
-from ...cam_handler import CV2CamHandler
-from .. import widgets
+from scalebar_demo.core.workers.base import BaseWorker
+from scalebar_demo.core.ui.windows.base import BaseWindow
+from scalebar_demo.core.cam_handler import CV2CamHandler
+from scalebar_demo.core.ui import widgets
 
 logger = structlog.get_logger()
 
 class MainWindow(BaseWindow):
 
-    def __init__(self, cfg: DictConfig, cam: CV2CamHandler, proc_func: T.Callable):
+    def __init__(self, cfg: DictConfig, cam: CV2CamHandler, worker: BaseWorker):
         super().__init__(cfg)
         logger.info("Create MainWindow")
 
@@ -30,17 +30,14 @@ class MainWindow(BaseWindow):
 
         self.header = header    = widgets.Header(cfg, parent=center)
         self.camera = camera    = widgets.CameraWidget(cfg, cam, parent=center)
-        self.proc = proc        = widgets.FrameProcessor(cfg, proc_func=proc_func, parent=center)
+        self.proc = proc        = widgets.FrameProcessor(cfg, worker=worker, parent=center)
+
         # self.extra_window       = windows.HighlightWindow(parent=self)
         # model_selection = widgets.ModelSelection(models=self.models, parent=center)
 
-        # logger.info("Header size: ", size=header.sizeHint())
-        # logger.info("Camera size: ", size=camera.sizeHint())
-        # logger.info("Center size: ", size=center.sizeHint())
-
-
         layout.addWidget(header, 1, alignment=QtCore.Qt.AlignmentFlag.AlignTop)
         layout.addWidget(camera, 4)
+        worker.setup_controls(parent=center)
         # layout.addWidget(model_selection, 1)
 
         self.prediction_label = QtWidgets.QLabel("")
@@ -179,3 +176,7 @@ class MainWindow(BaseWindow):
         # msgs.append(self.hotkey_text)
 
         self.statusBar().showMessage(" | ".join(msgs))
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.close()

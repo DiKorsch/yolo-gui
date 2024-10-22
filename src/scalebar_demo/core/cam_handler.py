@@ -7,6 +7,16 @@ from omegaconf import DictConfig
 
 logger = structlog.get_logger()
 
+def init_cam_handler(cfg: DictConfig):
+	handler = dict(
+		cv2=CV2CamHandler,
+		realsense=RealSenseCamHandler,
+	).get(cfg.cam.handler)
+	if handler is None:
+		logger.error("Unknown camera handler", handler=cfg.cam.handler)
+		raise ValueError(f"Unknown camera handler: {cfg.cam.handler}")
+	return handler(cfg)
+
 class CV2CamHandler(object):
 
     def __init__(self, cfg:DictConfig):
@@ -22,3 +32,20 @@ class CV2CamHandler(object):
 
     def read(self) -> tuple[bool, np.ndarray]:
         return self.cap.read()
+
+class RealSenseCamHandler:
+	def __init__(self, cfg: DictConfig):
+		super(RealSenseCamHandler, self).__init__()
+
+		self.pipeline = rs.pipeline()
+		self.config = rs.config()
+		self.config.enable_stream(rs.stream.color, cfg.cam.width, cfg.cam.height, rs.format.bgr8, cfg.cam.fps)
+
+		self.pipeline.start(self.config)
+
+	def read(self):
+		frames = self.pipeline.wait_for_frames()
+		color_frame = frames.get_color_frame()
+		color_image = np.asanyarray(color_frame.get_data())
+
+		return True, color_image
