@@ -1,5 +1,5 @@
 name: HailoWorker
-hef_path: yolov8s_seg.hef
+hef_path: yolov8s-seg.hef
 
 post_process:
   classes: 80

@@ -15,7 +15,7 @@ logger = structlog.get_logger()
 
 class Grabber(mp.Process):
 
-    def __init__(self, lock: mp.Lock, *args, **kwargs):
+    def __init__(self, lock: "mp.synchronize.Lock", *args, **kwargs):
         self.lock = lock
         self.a, self.b = mp.Pipe()
         super().__init__(*args, **kwargs)
