@@ -13,9 +13,10 @@ class DetectionWorker(BaseWorker):
         for ver, size, task in product(["v8", "11"], ["n", "s", "m", "l", "x"], ["", "-seg"])
     ]
 
-    def __init__(self, snapshot: str):
-        assert snapshot in DetectionWorker.available_snapshots, \
-            f"Snapshot {snapshot} not available: {DetectionWorker.available_snapshots}"
+    def __init__(self, snapshot: str, extra_snapshots: T.List[str] = []):
+        available = DetectionWorker.available_snapshots + extra_snapshots
+        if snapshot not in available:
+            raise ValueError(f"Snapshot {snapshot} not available: {available}")
         self.yolo = YOLO(snapshot)
         self.is_seg = "seg" in snapshot
 

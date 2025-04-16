@@ -5,6 +5,7 @@ import cv2
 import typing as T
 
 from dataclasses import dataclass
+from scalebar_demo.core.workers.base import BaseWorker
 
 logger = structlog.get_logger()
 
@@ -112,7 +113,7 @@ class Result:
 
 
 
-class HailoWorker:
+class HailoWorker(BaseWorker):
     target = None
 
     def __init__(self, hef_path: str, conf: dict):
@@ -147,7 +148,7 @@ class HailoWorker:
                 raw_detections = infer_pipeline.infer({self.input_info.name: X})
                 result = Result.postprocess(raw_detections, prefix=self.prefix, **self.conf)[0]
 
-        return result.plot(image, thresh=self.conf["thresh"], alpha=0.5)
+        return result.plot(image, thresh=self.conf["score_threshold"], alpha=0.5)
 
     def __del__(self):
         if self.target:
