@@ -1,3 +1,4 @@
 name: Detector
 weights: yolo11n-seg.pt
+extra_snapshots: []
 info_text: none #"src/assets/pose_estimator.html"

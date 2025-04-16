@@ -9,6 +9,7 @@ import structlog
 from PyQt5 import QtCore, QtWidgets
 
 from scalebar_demo import utils
+from scalebar_demo.core.workers.base import BaseWorker
 
 logger = structlog.get_logger()
 
@@ -29,7 +30,7 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
     #     for model in self.models.values():
     #         model.handle_key(event.key())
 
-    def __init__(self, cfg, proc_func: T.Callable, *args, **kwargs):
+    def __init__(self, cfg, worker: BaseWorker, *args, **kwargs):
         super(FrameProcessor, self).__init__(*args, **kwargs)
         # self.models = models
         # # just the take the first model as the initial model
@@ -39,12 +40,12 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
 
         self.result = None
         self.wait = cfg.wait_after_process
-        assert callable(proc_func), "proc_func must be callable"
-        self._process = proc_func
+        assert callable(worker), "worker must be callable"
+        self._worker = worker
 
     def process(self, *args, **kw):
         try:
-            res = self._process(*args, **kw)
+            res = self._worker(*args, **kw)
         except Exception as e:
             res = None
             logger.error("Error in processing frame", exc_info=e)

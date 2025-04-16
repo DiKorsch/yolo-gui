@@ -7,8 +7,10 @@ Currently tested on **Linux** only. Install **anaconda** or **miniconda**
 conda create -n Demo python=3.10 pip numpy>=1.26,<2.0 -y
 conda activate Demo
 pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu121
+# or for cpu-only (e.g. raspberry):
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 ```
-Install `mmpose` package: https://mmpose.readthedocs.io/en/latest/installation.html
+(optional) Install `mmpose` package: https://mmpose.readthedocs.io/en/latest/installation.html
 
 
 ### Installation for hailo

@@ -1,7 +1,7 @@
 root: none
 gpu: 0
 run_async: True
-wait_after_process: 0.5 # in seconds
+wait_after_process: 0.0 # in seconds
 
 defaults:
   - model: detector
@@ -13,6 +13,7 @@ cam:
   fps: 30
   flip_image: True
   temp_smoothing: False
+  handler: cv2 # realsence or cv2
 
 
 assets_path:
