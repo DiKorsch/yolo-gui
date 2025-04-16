@@ -4,10 +4,13 @@ import multiprocessing.dummy as mp
 import numpy as np
 import typing as T
 import time
+import structlog
 
 from PyQt5 import QtCore, QtWidgets
 
 from scalebar_demo import utils
+
+logger = structlog.get_logger()
 
 
 class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
@@ -40,7 +43,11 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
         self._process = proc_func
 
     def process(self, *args, **kw):
-        res = self._process(*args, **kw)
+        try:
+            res = self._process(*args, **kw)
+        except Exception as e:
+            res = None
+            logger.error("Error in processing frame", exc_info=e)
         if self.wait is not None and self.wait > 0:
             time.sleep(self.wait)
         return res
@@ -55,6 +62,7 @@ class FrameProcessor(QtWidgets.QWidget, utils.TicTocMixin):
             self.result = self.pool.apply_async(self.process, args=(frame,))
 
         if self.result is not None and self.result.ready():
+
             self.result_ready.emit(self.result.get())
 
             self.result = None

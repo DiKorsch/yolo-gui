@@ -177,3 +177,7 @@ pyrightconfig.json
 
 outputs/
 *.pt
+*.hef
+*.torchscript
+
+demo-env

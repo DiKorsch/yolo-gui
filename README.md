@@ -11,6 +11,42 @@ pip install -r requirements.txt --extra-index-url https://download.pytorch.org/w
 Install `mmpose` package: https://mmpose.readthedocs.io/en/latest/installation.html
 
 
+### Installation for hailo
+First, install the Hailo drivers based on [Getting Started](https://www.raspberrypi.com/documentation/computers/ai.html#getting-started) from their website.
+After the installation check if you can access the hailo platform package:
+
+```bash
+python -c "import hailo_platform"
+```
+If no ImportError is raised, you are ready to set up the virtual environment:
+
+```bash
+python -m venv --system-site-packages demo-env
+source demo-env/bin/activate
+```
+Check again, that the hailo platform package is accessible from the virtual environment (`--system-site-packages` is important to allow access to the system packages):
+
+```bash
+python -c "import hailo_platform"
+```
+
+Now, get and install hailo-model-zoo:
+
+```bash
+cd .. # go to the parent directory
+git clone git@github.com:tzlr-de/hailo_model_zoo.git
+cd hailo_model_zoo
+pip install -e . # this will take some minutes, since some packages has to be built
+```
+
+Finally, you can install the requirements for the demo. But before that uninstall the `opencv-python` package, because we require the headless version:
+
+```bash
+pip uninstall opencv-python
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu # < since we are on a raspberry, we need the CPU version of pytorch
+```
+
+
 ## Running the demo
 
 ### Default

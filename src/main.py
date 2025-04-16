@@ -30,6 +30,8 @@ def new_frame_processor(cfg: DictConfig):
         )
     elif cfg.model.name == "Detector":
         return workers.DetectionWorker(cfg.model.weights)
+    elif cfg.model.name == "HailoWorker":
+        return workers.HailoWorker(cfg.model.hef_path, cfg.model.post_process)
     else:
         raise ValueError(f"Unknown model: {cfg.model.name}")
 

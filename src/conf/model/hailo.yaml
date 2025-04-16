@@ -1,0 +1,13 @@
+name: HailoWorker
+hef_path: yolov8s_seg.hef
+
+post_process:
+  classes: 80
+  score_threshold: 0.5
+  nms_iou_thresh: 0.6
+  img_dims:
+    - 640
+    - 640
+  anchors:
+    strides: [32, 16, 8]
+    regression_length: 15 # reg_max

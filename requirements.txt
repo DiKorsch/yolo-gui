@@ -5,6 +5,7 @@ opencv-python-headless
 scipy
 structlog
 pyqtgraph
+scalebar
 
 PyQt5
 hydra-core

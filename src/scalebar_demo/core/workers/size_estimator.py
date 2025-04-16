@@ -3,8 +3,14 @@ import numpy as np
 import typing as T
 
 from scalebar.core.size import Size
+# try:
+#     from ultralytics.engine import results
+#     HAS_YOLO = True
+# except ImportError:
+#     import warnings
+#     warnings.warn("Ultralytics YOLO is not available. Please install it.")
+#     HAS_YOLO = False
 
-from ultralytics.engine import results
 from scalebar_demo.core.workers.scalebar import Result
 
 class SizeEstimator:
@@ -43,7 +49,7 @@ def plot_corners(img: np.ndarray, scbar: Result, scale: float) -> np.ndarray:
 
     return img
 
-def show_predictions(img: np.ndarray, preds: T.List[results.Results], scale: float, *, is_seg: bool = False) -> np.ndarray:
+def show_predictions(img: np.ndarray, preds: T.List["results.Results"], scale: float, *, is_seg: bool = False) -> np.ndarray:
     from scalebar_demo.core.workers.detection import putText
 
     for pred in preds:

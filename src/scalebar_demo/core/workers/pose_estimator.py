@@ -2,9 +2,8 @@ import numpy as np
 import cv2
 import typing as T
 
-from mmpose.apis import MMPoseInferencer
 from ultralytics.engine import results
-from ultralytics import YOLO
+from scalebar_demo.core.models import Purpose
 
 from itertools import product
 
@@ -13,16 +12,13 @@ class PoseEstimator:
         f"yolo{ver}{size}{task}.pt"
         for ver, size, task in product(["11"], ["n", "s", "m", "l", "x"], ["-pose"])
     ]
-    def __init__(self, threed=False, weights: str = "yolo11n-pose.pt"):
+    def __init__(self, threed=False, weights: str = "yolo11n-pose.pt", *, ncnn: bool = True):
 
         assert weights in PoseEstimator.available_snapshots, \
             f"Snapshot {weights} not available: {PoseEstimator.available_snapshots}"
 
         self.threed = threed
-        if threed:
-            self.model = MMPoseInferencer(pose3d="human3d")
-        else:
-            self.model = YOLO(weights)
+        self.model = Purpose.pose_estimation(weights, ncnn=ncnn, threed=threed)
 
     def __call__(self, frame: np.ndarray):
         if self.threed:

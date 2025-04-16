@@ -3,6 +3,7 @@ from scalebar_demo.core.workers.detection import DetectionWorker
 from scalebar_demo.core.workers.size_estimator import SizeEstimator
 from scalebar_demo.core.workers.pose_estimator import PoseEstimator
 from scalebar_demo.core.workers.grocery_detector import Detector
+from scalebar_demo.core.workers.hailo import HailoWorker
 
 __all__ = [
     "ScalebarProcessor",
@@ -10,4 +11,5 @@ __all__ = [
     "SizeEstimator",
     "PoseEstimator",
     "Detector",
+    "HailoWorker",
 ]
