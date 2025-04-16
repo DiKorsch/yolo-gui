@@ -1,6 +1,8 @@
 __all__ = ["CameraWidget"]
 
 import structlog
+import time
+
 from PyQt5 import QtCore, QtWidgets
 
 from scalebar_demo import utils
@@ -36,7 +38,7 @@ class CaptureThread(QtCore.QThread, utils.TicTocMixin):
                 continue
 
             if self.flip_image:
-                frame = frame[:, ::-1, :]#.copy()
+                frame = frame[:, ::-1, :]
 
             if self.temp_smoothing:
                 if self.avg_frame is None:
@@ -46,8 +48,9 @@ class CaptureThread(QtCore.QThread, utils.TicTocMixin):
                     frame = self.avg_frame = (a * self.avg_frame + b * frame).astype(frame.dtype)
 
             self.frame_ready.emit(frame)
-
+            time.sleep(0.01)
             self.toc()
+
 
 
 class CameraWidget(QtWidgets.QWidget, utils.TicTocMixin):

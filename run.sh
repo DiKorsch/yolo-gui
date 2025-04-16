@@ -8,7 +8,12 @@ if [[ "$CONDA_ENV" != "pip" ]]; then
     conda activate ${CONDA_ENV:-Demo}
 fi
 
-PYTHON="python"
+if [[ ${PROFILE:-0} == 1 ]]; then
+    echo "Profiling with cProfile"
+    PYTHON="python -m cProfile -o stats"
+else
+    PYTHON="python"
+fi
 # PYTHON="scalene --cpu --gpu --memory ---" # require !pip install scalene
 v4l2-ctl --list-devices
 

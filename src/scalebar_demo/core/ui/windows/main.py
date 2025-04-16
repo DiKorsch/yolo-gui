@@ -130,7 +130,8 @@ class MainWindow(BaseWindow):
             if scale is not None:
                 self._scales.append(scale)
                 self.update_status_bar()
-
+        elif img is None:
+            return
         img = self.postprocess(img)
         self.camera.result.set_image(img)
         # self.extra_window.result.set_image(img)
