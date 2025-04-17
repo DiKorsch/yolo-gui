@@ -2,7 +2,6 @@ import numpy as np
 import structlog
 import re
 import cv2
-import time
 
 try:
     import hailo_platform as HAILO

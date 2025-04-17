@@ -1,25 +1,14 @@
 
-import typing as T
 import numpy as np
 import structlog
-import time
 import cv2
 
-try:
-    from hailo_model_zoo.core.postprocessing import instance_segmentation_postprocessing as seg_post # type: ignore
-except ImportError:
-    pass
+from scalebar_demo.utils.cython import nms as c_nms
+
+# Contents copied from hailo_model_zoo.core.postprocessing.instance_segmentation_postprocessing
+# the implementations have been slightly improved to increase FPS
 
 logger = structlog.get_logger()
-
-def _unpack(arrs: T.List[np.ndarray], n: int, *, axis: int = 1) -> np.ndarray:
-    try:
-        res = [arr.reshape(-1, arr.shape[1] * arr.shape[2], n) for arr in arrs]
-    except ValueError:
-        reshapes = [f"{arr.shape} -> {(-1, arr.shape[1] * arr.shape[2], n)}" for arr in arrs]
-        logger.error(f"could not reshape arrays: {reshapes}")
-        raise
-    return np.concatenate(res, axis=axis)
 
 def _sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -27,6 +16,14 @@ def _sigmoid(x):
 def _softmax(x, axis=-1):
     x_exp = np.exp(x)
     return x_exp / x_exp.sum(axis=-1, keepdims=True)
+
+def xywh2xyxy(x):
+    y = np.copy(x)
+    y[:, 0] = x[:, 0] - x[:, 2] / 2
+    y[:, 1] = x[:, 1] - x[:, 3] / 2
+    y[:, 2] = x[:, 0] + x[:, 2] / 2
+    y[:, 3] = x[:, 1] + x[:, 3] / 2
+    return y
 
 DECODE_CACHE = {}
 def _get_decode_cache(w, h, stride, dtype=np.float32):
@@ -43,7 +40,7 @@ def _get_decode_cache(w, h, stride, dtype=np.float32):
         DECODE_CACHE[key] = center
     return DECODE_CACHE[key]
 
-def _decode(raw_boxes, strides, image_dims, reg_max, *, dtype=np.float32):
+def decode(raw_boxes, strides, image_dims, reg_max, *, dtype=np.float32):
     # boxes = None
     # print("raw_boxes", [b.shape for b in raw_boxes])
     res_shape = (1, sum([b.shape[1] * b.shape[2] for b in raw_boxes]), 4)
@@ -128,68 +125,98 @@ def process_mask(protos, masks_in, bboxes, shape):
         masks = masks[..., np.newaxis]
     return masks.transpose(2, 0, 1)  # HWC
 
-def postproccess(outputs: T.List[np.array], *,
-                 anchors: dict,
-                 img_dims: tuple,
-                 score_threshold: float = 0.5,
-                 nms_iou_thresh: float = 0.5,
-                 classes: int = 80
-                 ):
 
-    num_classes = classes
-    image_dims = tuple(img_dims)
-    strides = anchors["strides"][::-1]
-    reg_max = anchors["regression_length"]
-    score_thres = score_threshold
-    iou_thres = nms_iou_thresh
+def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, max_det=300, nm=32, multi_label=True):
+    """Non-Maximum Suppression (NMS) on inference results to reject overlapping detections
+    Args:
+        prediction: numpy.ndarray with shape (batch_size, num_proposals, 351)
+        conf_thres: confidence threshold for NMS
+        iou_thres: IoU threshold for NMS
+        max_det: Maximal number of detections to keep after NMS
+        nm: Number of masks
+        multi_label: Consider only best class per proposal or all conf_thresh passing proposals
+    Returns:
+         A list of per image detections, where each is a dictionary with the following structure:
+         {
+            'detection_boxes':   numpy.ndarray with shape (num_detections, 4),
+            'mask':              numpy.ndarray with shape (num_detections, 32),
+            'detection_classes': numpy.ndarray with shape (num_detections, 80),
+            'detection_scores':  numpy.ndarray with shape (num_detections, 80)
+         }
+    """
 
-    t0 = time.time()
-    decoded_boxes = _decode(outputs[:7:3], strides, image_dims, reg_max)
-    dec_t = time.time() - t0
+    assert 0 <= conf_thres <= 1, f"Invalid Confidence threshold {conf_thres}, valid values are between 0.0 and 1.0"
+    assert 0 <= iou_thres <= 1, f"Invalid IoU threshold {iou_thres}, valid values are between 0.0 and 1.0"
 
-    # unpack data
-    t0 = time.time()
-    proto_data = outputs[9]
-    n_masks = proto_data.shape[-1]
+    nc = prediction.shape[2] - nm - 5  # number of classes
+    xc = prediction[..., 4] > conf_thres  # candidates
+
+    max_wh = 7680  # (pixels) maximum box width and height
+    mi = 5 + nc  # mask start index
+    output = []
+    for xi, x in enumerate(prediction):  # image index, image inference
+        x = x[xc[xi]]  # confidence
+        # If none remain process next image
+        if not x.shape[0]:
+            output.append(
+                {
+                    "detection_boxes": np.zeros((0, 4)),
+                    "mask": np.zeros((0, 32)),
+                    "detection_classes": np.zeros((0, 80)),
+                    "detection_scores": np.zeros((0, 80)),
+                }
+            )
+            continue
+
+        # Confidence = Objectness X Class Score
+        x[:, 5:] *= x[:, 4:5]
+
+        # (center_x, center_y, width, height) to (x1, y1, x2, y2)
+        boxes = xywh2xyxy(x[:, :4])
+        mask = x[:, mi:]
+
+        multi_label &= nc > 1
+        if not multi_label:
+            conf = np.expand_dims(x[:, 5:mi].max(1), 1)
+            j = np.expand_dims(x[:, 5:mi].argmax(1), 1).astype(np.float32)
+
+            keep = np.squeeze(conf, 1) > conf_thres
+            x = np.concatenate((boxes, conf, j, mask), 1)[keep]
+        else:
+            i, j = (x[:, 5:mi] > conf_thres).nonzero()
+            x = np.concatenate((boxes[i], x[i, 5 + j, None], j[:, None].astype(np.float32), mask[i]), 1)
+
+        # sort by confidence
+        x = x[x[:, 4].argsort()[::-1]]
+
+        # per-class NMS
+        cls_shift = x[:, 5:6] * max_wh
+        boxes = x[:, :4] + cls_shift
+        conf = x[:, 4:5]
+        preds = np.hstack([boxes.astype(np.float32), conf.astype(np.float32)])
+
+        keep = c_nms(preds, iou_thres)
+        if keep.shape[0] > max_det:
+            keep = keep[:max_det]
+
+        out = x[keep]
+        scores = out[:, 4]
+        classes = out[:, 5]
+        boxes = out[:, :4]
+        masks = out[:, 6:]
+
+        out = {"detection_boxes": boxes, "mask": masks, "detection_classes": classes, "detection_scores": scores}
+
+        output.append(out)
+
+    return output
 
 
-    scores = _unpack(outputs[1:8:3], num_classes)
-    coeffs = _unpack(outputs[2:9:3], n_masks)
-
-
-    fake_objectness = np.ones((scores.shape[0], scores.shape[1], 1), dtype=np.float32)
-    scores_obj = np.concatenate([fake_objectness, scores], axis=-1)
-    # print("scores", scores_obj.dtype)
-
-    # re-arrange predictions for nms
-    predictions = np.concatenate([decoded_boxes, scores_obj, coeffs], axis=2)
-    unpack_t = time.time() - t0
-    # print("preds", predictions.dtype)
-
-    t0 = time.time()
-    nms_results = seg_post.non_max_suppression(predictions,
-                                               conf_thres=score_thres,
-                                               iou_thres=iou_thres,
-                                               multi_label=True)
-    nms_t = time.time() - t0
-    outputs = []
-    image_size = np.tile(image_dims, 2)
-    proc_t = 0
-
-    # for key, arr in nms_res[0].items():
-    #     print(key, arr.shape, arr.dtype)
-
-    for protos, nms_res in zip(proto_data, nms_results):
-        t0 = time.time()
-        masks = process_mask(protos, nms_res["mask"], nms_res["detection_boxes"], image_dims)
-        proc_t += time.time() - t0
-
-        outputs.append(dict(
-            mask=masks if masks is not None else [],
-            detection_scores=nms_res["detection_scores"],
-            detection_classes=nms_res["detection_classes"].astype(np.int32),
-            detection_boxes=(nms_res["detection_boxes"] / image_size).astype(np.float32),
-        ))
-
-    logger.debug(f"[hailo - postprocess times] unpack: {unpack_t:.3f}s | nms: {nms_t:.3f}s | decode: {dec_t:.3f}s | mask process: {proc_t:.3f}s")
-    return outputs
+def mask_to_polygons(mask, threshold: float = 0.5):
+    # mask = np.ascontiguousarray(mask)
+    contours, hierarchy = cv2.findContours((mask >= threshold).astype("uint8"), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+    if hierarchy is None:  # empty mask
+        return [], False
+    has_holes = (hierarchy.reshape(-1, 4)[:, 3] >= 0).sum() > 0
+    res = [x.flatten() + 0.5 for x in contours if len(x) >= 6]
+    return res, has_holes
