@@ -10,7 +10,7 @@ from scalebar_demo.core.workers.base import BaseWorker
 class DetectionWorker(BaseWorker):
     available_snapshots = [
         f"yolo{ver}{size}{task}.pt"
-        for ver, size, task in product(["v8", "11"], ["n", "s", "m", "l", "x"], ["", "-seg"])
+        for ver, size, task in product(["v8", "11"], ["n", "s", "m", "l", "x"], ["", "-seg", "-defects"])
     ]
 
     def __init__(self, snapshot: str, extra_snapshots: T.List[str] = []):

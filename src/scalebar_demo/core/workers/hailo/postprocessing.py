@@ -3,7 +3,11 @@ import numpy as np
 import structlog
 import cv2
 
-from scalebar_demo.utils.cython import nms as c_nms
+try:
+    from scalebar_demo.utils.cython import nms
+except ModuleNotFoundError:
+    from scalebar_demo.utils import nms # fallback to pure Python implementation if Cython is not available
+
 
 # Contents copied from hailo_model_zoo.core.postprocessing.instance_segmentation_postprocessing
 # the implementations have been slightly improved to increase FPS
@@ -195,7 +199,7 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, max_det=300
         conf = x[:, 4:5]
         preds = np.hstack([boxes.astype(np.float32), conf.astype(np.float32)])
 
-        keep = c_nms(preds, iou_thres)
+        keep = nms(preds, iou_thres)
         if keep.shape[0] > max_det:
             keep = keep[:max_det]
 
