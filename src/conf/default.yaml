@@ -23,7 +23,7 @@ assets_path:
 css_styles:
   main: "main_style.css"
 
-icon: "icon_dark_text.png"
+icon: "iab-icon.png"
 
 logos: [
 

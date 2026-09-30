@@ -4,13 +4,7 @@ QMainWindow * {
 }
 
 QMainWindow {
-	background-color: qlineargradient(
-		spread:pad,
-		x1:0, y1:0, x2:1, y2:0,
-		stop:0.000 rgb(25, 112, 177),
-		stop:0.500 rgb(35, 146, 153),
-		stop:1.000 rgb(50, 171, 108)
-	);
+	background-color: white;
 }
 
 /* only QLabel class */

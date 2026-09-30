@@ -19,7 +19,7 @@ class Header(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout()
         # layout.setContentsMargins(40, 40, 40, 40)
         logo_label = QtWidgets.QLabel(self)
-        pixmap = QtGui.QPixmap("src/assets/logos/bright_long_transparent_sm.png")
+        pixmap = QtGui.QPixmap("src/assets/logos/IAB-Logo_sm.png")
         logo_label.setPixmap(pixmap)
         logo_label.setContentsMargins(10, 10, 10, 10)
         # logo_label.setMinimumSize(pixmap.size())
